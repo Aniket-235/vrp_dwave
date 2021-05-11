@@ -173,3 +173,28 @@ print(Q)
 print('next')
 print(g)
 print(c)
+print('next')
+
+
+from dwave.system import DWaveSampler, EmbeddingComposite
+from collections import defaultdict
+import dimod
+
+import dwave.inspector
+
+Q_dict = defaultdict(float)
+
+for i in range(n*K):
+    Q_dict[(i,i)] = Q[i][i]
+    for j in range(i+1,n*K):
+        Q_dict[(i,j)] = Q[i][j]
+
+print(Q_dict)
+print('next')
+
+sampler = EmbeddingComposite(DWaveSampler())
+sampleset = sampler.sample_qubo(Q, num_reads=10, chain_strength=10)
+print(sampleset)
+
+dwave.inspector.show(sampleset)
+
