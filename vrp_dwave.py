@@ -187,14 +187,41 @@ Q_dict = defaultdict(float)
 for i in range(n*K):
     Q_dict[(i,i)] = Q[i][i]
     for j in range(i+1,n*K):
-        Q_dict[(i,j)] = Q[i][j]
+        Q_dict[(i,j)] = 2*Q[i][j]
 
 print(Q_dict)
-print('next')
+print('quadratic')
+
+# for i in range(n*K):
+#     Q_dict[(i,i)] += g[i]
+
+Q_dict_lin = defaultdict(float)
+for i in range(n*K):
+    Q_dict_lin[(i)] = g[i]
+
+print(Q_dict_lin)
+print('linear')
+
+offset = c
+vartype = dimod.BINARY
+
+# sampler = EmbeddingComposite(DWaveSampler())
+# sampleset = sampler.sample_qubo(Q, num_reads=100, chain_strength=10)
+# print(sampleset)
+
+from dimod import BinaryQuadraticModel
+from dwave_qbsolv import QBSolv
+BQM = BinaryQuadraticModel(Q_dict_lin,Q_dict, offset, vartype)
+response = QBSolv().sample(BQM)
+print(list(response.samples()))
+print(response)
+print(BQM)
+# list(response.energies())
+# dwave.inspector.show(response)
+# print(Q_dict)
 
 sampler = EmbeddingComposite(DWaveSampler())
-sampleset = sampler.sample_qubo(Q, num_reads=10, chain_strength=10)
+sampleset = sampler.sample(BQM, num_reads=100, chain_strength=10)
 print(sampleset)
 
 dwave.inspector.show(sampleset)
-
