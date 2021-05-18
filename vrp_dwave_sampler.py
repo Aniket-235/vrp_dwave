@@ -182,6 +182,9 @@ import dimod
 
 import dwave.inspector
 
+from dimod import BinaryQuadraticModel
+from dwave_qbsolv import QBSolv
+
 Q_dict = defaultdict(float)
 
 for i in range(n*K):
@@ -209,19 +212,49 @@ vartype = dimod.BINARY
 # sampleset = sampler.sample_qubo(Q, num_reads=100, chain_strength=10)
 # print(sampleset)
 
-from dimod import BinaryQuadraticModel
-from dwave_qbsolv import QBSolv
+
 BQM = BinaryQuadraticModel(Q_dict_lin,Q_dict, offset, vartype)
 response = QBSolv().sample(BQM)
-# print(list(response.samples()))
 print(response)
+# print(list(response.samples()))
+
 # print(BQM)
 # list(response.energies())
 # dwave.inspector.show(response)
 # print(Q_dict)
 
+# sampler = EmbeddingComposite(DWaveSampler())
+# sampleset = sampler.sample(BQM, num_reads=1024, chain_strength=100000)
+# print(sampleset)
+# # print(list(sampleset.energies()))
+# dwave.inspector.show(sampleset)
+
+
+
+n = 4
+K = n - 1
+print(n,K)
+initializer = Initializer(n)
+xc,yc,instance = initializer.generate_instance()
+quantum_optimizer1 = QuantumOptimizer(instance, n, K)
+
+Q, g, c, binary_cost = quantum_optimizer1.binary_representation()
+Q_dict = defaultdict(float)
+
+for i in range(n*K):
+    Q_dict[(i,i)] = Q[i][i]
+    for j in range(i+1,n*K):
+        Q_dict[(i,j)] = 2*Q[i][j]
+
+Q_dict_lin = defaultdict(float)
+for i in range(n*K):
+    Q_dict_lin[(i)] = g[i]
+
+offset = c
+vartype = dimod.BINARY
+BQM = BinaryQuadraticModel(Q_dict_lin,Q_dict, offset, vartype)
 sampler = EmbeddingComposite(DWaveSampler())
-sampleset = sampler.sample(BQM, num_reads=1024, chain_strength=100000)
+sampleset = sampler.sample(BQM, num_reads=100, chain_strength=10000)
 print(sampleset)
-# print(list(sampleset.energies()))
+
 dwave.inspector.show(sampleset)
